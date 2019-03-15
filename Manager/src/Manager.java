@@ -41,6 +41,8 @@ public class Manager{
 			allLines = Files.readAllLines(path, StandardCharsets.UTF_8);
 			for(String str: allLines)
 			{
+				if(str.equals("")) continue;
+				
 				String[] parts = str.split(" ");
 				ip.add(parts[0]);
 				port.add(Integer.parseInt(parts[1]));
