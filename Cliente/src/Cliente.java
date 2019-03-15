@@ -11,7 +11,7 @@ public class Cliente{
 	//Si se cae el proxy, buscar a los otros
 	public static void main(String [] args)//Solo mientras se ejecute en consola
 	{
-		String ipServidor="10.192.101.37";
+		String ipServidor="192.168.0.2";
 		conectarConServidor(ipServidor);
 	}
 	
@@ -23,7 +23,6 @@ public class Cliente{
 		String enviar;
 		DataOutputStream out;
 		String mensaje;
-	//	puerto = buscarProxy(ipServidor);
 		try { //Intentemos hacer conexion con el register
 			
 			Socket scRegister= new Socket(ipServidor, puerto);
@@ -31,7 +30,7 @@ public class Cliente{
 			in=new DataInputStream(scRegister.getInputStream());
 			out=new DataOutputStream(scRegister.getOutputStream());
 			
-			//Esperar a que el register le diga al cliente a donde conectarse
+			//Esperar a que el manager le diga al cliente a donde conectarse
 			
 			String ipAConectar=in.readUTF();  //Aqui se obtiene la ip de donde se va a conectar el cliente
 			int puertoAConectar= Integer.parseInt(in.readUTF()); //Aqui se obtiene el puerto en donde se va a conectar el cliente                             
@@ -85,47 +84,6 @@ public class Cliente{
 			//conectarConServidor(ipServidor);
 		}
 	}
-	
-	/*
-	public static int buscarProxy(String ipServidor) {
-		int puerto=4999;
-		DataInputStream in;
-		String enviar;
-		DataOutputStream out;
-		int minimo = 99, puertoCorrecto = 5000;
-		
-		while(true && puerto < 5005){
-			System.out.println(" "+puerto);
-			
-			try {
-				Socket sc= new Socket(ipServidor, puerto);
-				//Inicio de sesion
-				out=new DataOutputStream(sc.getOutputStream());
-				out.writeUTF("1");
-				in=new DataInputStream(sc.getInputStream());
-				String mensaje=in.readUTF();
-				System.out.println(mensaje);
-				mensaje=in.readUTF();
-				System.out.println(mensaje);//Salida en consola
-				if(minimo > Integer.parseInt(mensaje)) {
-					
-					minimo = Integer.parseInt(mensaje);
-					puertoCorrecto = puerto;
-				}
-				
-			} catch (UnknownHostException e) {
-				//e.printStackTrace();
-			} catch (IOException e) {
-				//e.printStackTrace();
-			}
-			puerto++;
-		}
-		
-		puerto = puertoCorrecto;
-		System.out.println("Puerto->"+puerto);
-		return puerto;
-	}
-	*/
 }
 
 

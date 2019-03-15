@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.Semaphore;
 
 public class Manager{
 
@@ -27,9 +28,12 @@ public class Manager{
 	private static List<Integer> port;
 	
 	private static List<Integer> cantidad;
+	
+	private static Semaphore semaforo;
 		
 	public Manager()
 	{
+		semaforo = new Semaphore(1, true);
 		ip = new ArrayList<String>();
 		port = new ArrayList<Integer>();
 		cantidad = new ArrayList<Integer>();
@@ -88,46 +92,20 @@ public class Manager{
 		}
 	}
 	
-	public static void esperarCliente()
+	public void esperarCliente()
 	{
 		ServerSocket servidor = null;
 		Socket scCliente = null;
-		DataInputStream in;
-		DataOutputStream out;
-		String mensaje;
 		try
 		{
 			servidor=new ServerSocket(5500);
-			System.out.println("Proxy activado");
+			System.out.println("Manager creado");
 			while(true)
 			{
 				scCliente=servidor.accept();
-				in= new DataInputStream(scCliente.getInputStream());
-				out= new DataOutputStream(scCliente.getOutputStream());
-				do {
-					preguntarProxys();
-					int index = -1;
-					int minimo = 1000000000;
-					for(int i=0 ; i<cantidad.size() ; ++i)
-					{
-						if(minimo > cantidad.get(i) && cantidad.get(i)!=-1)
-						{
-							minimo = cantidad.get(i);
-							index = i;
-						}
-					}
-					if(index == -1)
-					{
-						out.writeUTF("-1");
-						out.writeUTF("-1");
-					}
-					else
-					{
-						out.writeUTF(ip.get(index));
-						out.writeUTF("" + port.get(index));
-					}
-					mensaje = in.readUTF();
-				}while(mensaje == "-1");
+				ManejoClientes MC = new ManejoClientes(this, scCliente);
+				MC.start();
+
 			}
 		} catch (Exception e) {
 			System.out.println(e);
