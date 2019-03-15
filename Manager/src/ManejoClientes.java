@@ -1,8 +1,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class ManejoClientes extends Thread{
@@ -35,30 +33,37 @@ public class ManejoClientes extends Thread{
 	
 	public void run()
 	{
+		Boolean b;
+		do {
+			try {
+				semaforo.acquire();
+				b = true;
+			}catch(Exception e)
+			{
+				System.out.println(e);
+				b=false;
+			}
+		}while(semaforo.availablePermits() != 0 && b.equals(true));
 		try {
-			semaforo.acquire();
-			Scanner teclado;
-			teclado=new Scanner(System.in);
 			do {
 				String solution = manager.preguntarProxys();
+				System.out.println(solution);
 				String[] diffs = solution.split(" ");
 				ip = diffs[0];
 				port = diffs[1];
 				
 				out.writeUTF(ip);
-				out.writeUTF("" + port);
+				out.writeUTF(port);
 				
 				mensaje = in.readUTF();
 			}while(mensaje == "-1");
 		}catch(Exception e)
 		{
-			System.out.println("" + sc.getPort() + ": " + e);
+			System.out.println("Port " + sc.getPort() + ": " + e);
 		}
 		semaforo.release();
 		try {
 			in.close();
-			out.close();
-			sc.close();
 		}catch(Exception e)
 		{
 			System.out.println(e);

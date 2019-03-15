@@ -37,6 +37,7 @@ public class Cliente{
 			if(ipAConectar.equals("-1"))//Si no se encontro ningun proxy disponible
 			{
 				System.out.println("No se pudo encontrar ningun proxy disponible");//No se encontro ningun proxy disponible
+				out.writeUTF("1");
 				scRegister.close();
 				return;  //Terminar proceso
 			}

@@ -1,16 +1,13 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class Manager{
@@ -63,13 +60,11 @@ public class Manager{
 		man.esperarCliente();
 	}
 	
-	public static String preguntarProxys()
+	public String preguntarProxys()
 	{
-		String solution = new String();
 		for(int i=0 ; i<ip.size() ; ++i)
 		{
 			DataInputStream in;
-			String enviar;
 			DataOutputStream out;
 			System.out.println("Intento de conexión con " + ip.get(i) + " en puerto " + port.get(i));
 			try {
