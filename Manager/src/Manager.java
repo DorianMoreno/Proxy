@@ -63,8 +63,9 @@ public class Manager{
 		man.esperarCliente();
 	}
 	
-	public static void preguntarProxys()
+	public static String preguntarProxys()
 	{
+		String solution = new String();
 		for(int i=0 ; i<ip.size() ; ++i)
 		{
 			DataInputStream in;
@@ -85,11 +86,21 @@ public class Manager{
 				cantidad.set(i, -1);
 			}
 		}
-		System.out.println("Las cantidades de usuarios en los proxys son:");
-		for(Integer cant: cantidad)
+		int index = -1;
+		int minimo = Integer.MAX_VALUE;
+		for(int i=0 ; i<cantidad.size() ; ++i)
 		{
-			System.out.println(cant);
+			if(minimo > cantidad.get(i) && cantidad.get(i)!=-1)
+			{
+				minimo = cantidad.get(i);
+				index = i;
+			}
 		}
+		if(index == -1)
+		{
+			return "-1 -1";
+		}
+		return ip.get(index) + " " + port.get(index);
 	}
 	
 	public void esperarCliente()
@@ -102,10 +113,15 @@ public class Manager{
 			System.out.println("Manager creado");
 			while(true)
 			{
-				scCliente=servidor.accept();
-				ManejoClientes MC = new ManejoClientes(this, scCliente);
+				scCliente = servidor.accept();
+				
+				DataInputStream in= new DataInputStream(scCliente.getInputStream());
+				DataOutputStream out= new DataOutputStream(scCliente.getOutputStream());
+				
+				ManejoClientes MC = new ManejoClientes(this, scCliente, semaforo, in, out);
 				MC.start();
-
+				
+				scCliente = null;
 			}
 		} catch (Exception e) {
 			System.out.println(e);
