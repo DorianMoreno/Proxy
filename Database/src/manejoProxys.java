@@ -38,6 +38,9 @@ public class manejoProxys extends Thread {
 			out= new DataOutputStream(scProxy.getOutputStream());
 			String mensaje;
 			String idUsuario;
+			String hashUsuario;
+			String hash;
+			String territorio;
 			
 			while(true)
 			{
@@ -49,11 +52,11 @@ public class manejoProxys extends Thread {
 					
 					this.SemaforoWait();
 					System.out.println("Proxy "+this.scProxy.getInetAddress()+" desea buscar si una id esta registrada");
-					idUsuario=in.readUTF();//Lee el id del usuario
-					if(this.baseDeDatos.buscarSiUsuarioExiste(idUsuario))//Mandar a la clase DB a buscar el id del usuario en la lista de usuario
+					idUsuario = in.readUTF();//Lee el id del usuario
+					hashUsuario = in.readUTF();//Lee el id del usuario
+					if(this.baseDeDatos.buscarSiUsuarioExiste(idUsuario, hashUsuario))//Mandar a la clase DB a buscar el id del usuario en la lista de usuario
 					{//Si el id esta registrado
 						this.out.writeUTF("true");//Confirmar inicio de sesion exitosa
-						
 					}else
 					{
 					//Si el id no esta registrado
@@ -62,19 +65,18 @@ public class manejoProxys extends Thread {
 					scProxy.close();
 					semaforo.release();
 					return;
-					
-					
-					
 				}
 				
 				if(aux.equals("Registrar"))
 				{
 					this.SemaforoWait();//Comienzo de seccion critica
-					aux= in.readUTF();
+					territorio = in.readUTF();
+					hash = in.readUTF();
+
 					out.writeUTF(String.valueOf(this.baseDeDatos.id));
 										
 					this.baseDeDatos.id++;
-					Usuario usu = new Usuario(String.valueOf(this.baseDeDatos.id-1), " ", aux);
+					Usuario usu = new Usuario(String.valueOf(this.baseDeDatos.id-1),  hash, territorio);
 					this.baseDeDatos.usuarios.add(usu);
 					scProxy.close();
 					semaforo.release();//Fin de seccion critica

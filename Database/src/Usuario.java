@@ -2,14 +2,14 @@ public class Usuario {
 	
 	private String id;
 	
-	private String contra;	//En realidad es el hash de la contraseña + su id
+	private String hash;	//El hash de la contraseña + su id
 	
 	private String territorio;
 	
-	public Usuario(String id, String contra, String territorio)
+	public Usuario(String id, String hash, String territorio)
 	{
 		this.id = id;
-		this.contra = contra;
+		this.hash = hash;
 		this.territorio = territorio;
 	}
 
@@ -21,12 +21,12 @@ public class Usuario {
 		this.id = id;
 	}
 
-	public String getContra() {
-		return contra;
+	public String getHash() {
+		return hash;
 	}
 
-	public void setContra(String contra) {
-		this.contra = contra;
+	public void setHash(String hash) {
+		this.hash = hash;
 	}
 
 	public String getTerritorio() {

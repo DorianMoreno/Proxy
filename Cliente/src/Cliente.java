@@ -7,13 +7,14 @@ import java.util.Scanner;
 
 public class Cliente extends Thread{
 	String nombreInicioDeSesion;
+	String hashInicioDeSesion;
 	boolean sesionIniciada;
 	//En la lista de proxies buscar los que tienen menos carga.
 	//Si se cae el proxy, buscar a los otros
 	public static void main(String [] args) throws InterruptedException//Solo mientras se ejecute en consola
 	{
 
-		String ipServidor="127.0.0.1";
+		String ipServidor="25.3.250.74";
 		new Cliente().conectarConServidor(ipServidor);
 	}
 	public  Socket binding(String ipServidor, int puerto) throws UnknownHostException, IOException 
@@ -36,10 +37,11 @@ public class Cliente extends Thread{
 		}
 
 		Socket scProxy=new Socket (ipAConectar, puertoAConectar); //Conectar con proxy
-
+		
 		out.writeUTF("1");
 		scRegister.close();//El cliente cierra conexion con el Register
 
+		System.out.println("Conexion con " + scProxy.getInetAddress() + ":" + scProxy.getPort());
 		return scProxy;
 	}
 
@@ -112,23 +114,30 @@ public class Cliente extends Thread{
 						System.out.println("2.Registrar");
 
 						enviar=teclado.nextLine();
-						if(enviar.trim().equals("Registrar"))
+						if(enviar.trim().equals("Registrar") || enviar.trim().equals("2"))
 						{
 							//Thread.sleep(2000);
-							out.writeUTF("lol");//Informa al proxy que va a registrarse
+							out.writeUTF("Registro");//Informa al proxy que va a registrarse
 							System.out.println("Ingresar region");
 
 							out.writeUTF(teclado.nextLine());// Le envia al proxy la region en donde esta ubicado
+							
+							System.out.println("Ingresar contraseña");
+							
+							out.writeUTF(String.valueOf(teclado.nextLine().hashCode()));// Le envia al proxy la region en donde esta ubicado
 
 							System.out.println("El id asignado para usted es: "+in.readUTF());
 						}
 
-						if(enviar.trim().equals("Iniciar sesion"))
+						if(enviar.trim().equals("Iniciar sesion") || enviar.trim().equals("1"))
 						{
 							out.writeUTF("IniciarSesion");
 							System.out.println("Ingresar ID del usuario");
 							this.nombreInicioDeSesion=teclado.nextLine();
-							out.writeUTF(nombreInicioDeSesion.trim());//Envia al proxy el nombre de usuario
+							System.out.println("Ingresar contraseña");
+							this.hashInicioDeSesion = String.valueOf(teclado.nextLine().hashCode());
+							out.writeUTF(nombreInicioDeSesion.trim());//Envia al proxy el nombre del usuario
+							out.writeUTF(hashInicioDeSesion.trim());//Envia al proxy el hash del usuario
 							mensaje=in.readUTF();
 							if(mensaje.trim().equals("true"))
 							{
@@ -159,7 +168,7 @@ public class Cliente extends Thread{
 								}
 							}
 						}
-						if(enviar.trim().equals("Salir"))
+						if(enviar.trim().equals("Salir") || enviar.trim().equals("0"))
 						{
 							out.writeUTF("Salir");
 							scProxy.close();
@@ -178,6 +187,7 @@ public class Cliente extends Thread{
 					{
 						return;
 					}
+					System.out.println("Conexion reestablecida\n");
 				}
 			}
 		} catch (UnknownHostException e) {

@@ -14,7 +14,6 @@ public class Proxy extends Thread {
 	
 	private Integer cantUsuariosConectados =0;
 	
-	
 	public static void main(String[] args) throws InterruptedException
 	{
 		System.out.println("Ingresar el puerto por el que se quiere iniciar el proxy");
@@ -24,6 +23,7 @@ public class Proxy extends Thread {
 		teclado.close();
 		new Proxy().EjecutarProxy(puerto);
 	}
+	
 	public void EjecutarProxy (int puerto) throws InterruptedException
 	{
 		ServerSocket servidor=null;
@@ -60,10 +60,7 @@ public class Proxy extends Thread {
 			// TODO Auto-generated catch block
 			System.out.println("El puerto ya está siendo utilizado por otra aplicacion");
 			e.printStackTrace();
-
 		}
-
-
 	}
 }
 

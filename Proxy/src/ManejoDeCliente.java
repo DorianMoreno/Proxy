@@ -42,6 +42,7 @@ public class ManejoDeCliente extends Thread{
 	{
 		Socket scDataBase; 
 		String nombreUsuario;
+		String hashUsuario;
 		String regionUsuario;
 		DataInputStream inDB;
 		DataOutputStream outDB;
@@ -53,22 +54,25 @@ public class ManejoDeCliente extends Thread{
 			out= new DataOutputStream(sc.getOutputStream());
 			String mensajeDelCliente = " ";
 			String mensajeDeLaBD;
+			String hash;
 			//out.writeUTF("Mensaje del servidor: conexion exitosa");
 			//Inicio de sesion del usuario
 			boolean usuarioConectado=true;
 			while(usuarioConectado) {
 				mensajeDelCliente=in.readUTF();
 
-				if(mensajeDelCliente.equals("lol"))//En el inicio de usuario de uncliente
+				if(mensajeDelCliente.equals("Registro"))//En el inicio de usuario de uncliente
 				{
 					regionUsuario=in.readUTF();//Recibe registro del usuario
+					hash = in.readUTF();
 					this.SemaforoWait();//Comienza seccion critica
-
+					
 					scDataBase= new Socket("127.0.0.1",7000);//Conectarse al database
 					inDB= new DataInputStream(scDataBase.getInputStream());
 					outDB= new DataOutputStream(scDataBase.getOutputStream());
 					outDB.writeUTF("Registrar");//Pedirle id al database
 					outDB.writeUTF(regionUsuario);// Se envia la region del usuario
+					outDB.writeUTF(hash);
 					out.writeUTF(inDB.readUTF());	//enviarle el id al usuario
 
 
@@ -97,6 +101,7 @@ public class ManejoDeCliente extends Thread{
 				{
 					System.out.println("Cliente "+sc.getInetAddress()+" "+sc.getPort() +" esta intentando iniciar sesion");
 					nombreUsuario=in.readUTF();//Recibe el nombre de usuario
+					hashUsuario = in.readUTF();//Recibe el hash de la contraseña del usuario
 					this.SemaforoWait();//Comienza seccion critica
 					
 					scDataBase= new Socket("127.0.0.1",7000);//Conectarse al database
@@ -104,6 +109,7 @@ public class ManejoDeCliente extends Thread{
 					outDB= new DataOutputStream(scDataBase.getOutputStream());
 					outDB.writeUTF("BuscarID");//Decirle al database que va a buscar un id ya existente
 					outDB.writeUTF(nombreUsuario);//Pasarle el id del usuario al DB
+					outDB.writeUTF(hashUsuario);//Pasarle el hash de la contraseña del usuario al DB
 					out.writeUTF(inDB.readUTF());//Espera confirmacion de la DB //Informar al usuario si su id existe o no
 			
 					
