@@ -7,13 +7,13 @@ public class ManejoClientes extends Thread{
 
 	private static Manager manager;
 	
-	final Socket sc;
+	private final Socket sc;
 	
 	private static String mensaje;
 	
-	final DataInputStream in;
+	private final DataInputStream in;
 	
-	final DataOutputStream out;
+	private final DataOutputStream out;
 	
 	private static Semaphore semaforo;
 	
@@ -63,7 +63,7 @@ public class ManejoClientes extends Thread{
 		}
 		semaforo.release();
 		try {
-			in.close();
+			sc.close();
 		}catch(Exception e)
 		{
 			System.out.println(e);
