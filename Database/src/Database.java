@@ -34,6 +34,19 @@ public class Database {
 		}
 		return false;
 	}
+	
+	public String buscarUsuario(String idUsuario)
+	{
+		for(Usuario usuario : usuarios) {
+			if(usuario.getId().trim().equals(idUsuario.trim()))//Si encuentra coincidencia entre los ids
+			{
+				return usuario.getTerritorio();
+
+			}
+		}
+		return "-1";
+	}
+
 
 	public Database() {
     this.id=0;

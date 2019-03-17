@@ -111,6 +111,7 @@ public class ManejoDeCliente extends Thread{
 					outDB.writeUTF(nombreUsuario);//Pasarle el id del usuario al DB
 					outDB.writeUTF(hashUsuario);//Pasarle el hash de la contraseña del usuario al DB
 					out.writeUTF(inDB.readUTF());//Espera confirmacion de la DB //Informar al usuario si su id existe o no
+					out.writeUTF(inDB.readUTF());//Si el usuario existe manda su territorio, sino envía un "false"
 			
 					
 					scDataBase.close();

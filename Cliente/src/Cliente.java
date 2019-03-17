@@ -8,6 +8,7 @@ import java.util.Scanner;
 public class Cliente extends Thread{
 	String nombreInicioDeSesion;
 	String hashInicioDeSesion;
+	String territorioInicioSesion;
 	boolean sesionIniciada;
 	//En la lista de proxies buscar los que tienen menos carga.
 	//Si se cae el proxy, buscar a los otros
@@ -136,9 +137,10 @@ public class Cliente extends Thread{
 							this.nombreInicioDeSesion=teclado.nextLine();
 							System.out.println("Ingresar contraseña");
 							this.hashInicioDeSesion = String.valueOf(teclado.nextLine().hashCode());
-							out.writeUTF(nombreInicioDeSesion.trim());//Envia al proxy el nombre del usuario
-							out.writeUTF(hashInicioDeSesion.trim());//Envia al proxy el hash del usuario
+							out.writeUTF(nombreInicioDeSesion.trim()); //Envia al proxy el nombre del usuario
+							out.writeUTF(hashInicioDeSesion.trim()); //Envia al proxy el hash del usuario
 							mensaje=in.readUTF();
+							this.territorioInicioSesion = in.readUTF();
 							if(mensaje.trim().equals("true"))
 							{
 								try {

@@ -57,10 +57,12 @@ public class manejoProxys extends Thread {
 					if(this.baseDeDatos.buscarSiUsuarioExiste(idUsuario, hashUsuario))//Mandar a la clase DB a buscar el id del usuario en la lista de usuario
 					{//Si el id esta registrado
 						this.out.writeUTF("true");//Confirmar inicio de sesion exitosa
+						this.out.writeUTF(this.baseDeDatos.buscarUsuario(idUsuario)); //Manda el territorio del usuario que inicio sesión
 					}else
 					{
 					//Si el id no esta registrado
 						this.out.writeUTF("false");//Confirmar inicio de sesion no exitosa
+						this.out.writeUTF("false");
 					}
 					scProxy.close();
 					semaforo.release();
