@@ -13,6 +13,7 @@ public class Territorio {
 		nombre = pnombre;
 	}
 	
+	
 	public static Integer getId() {
 		return id;
 	}

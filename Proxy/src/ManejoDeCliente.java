@@ -1,67 +1,131 @@
+import java.awt.image.SampleModel;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.Semaphore;
 
 public class ManejoDeCliente extends Thread{
 	DataInputStream in;
 	DataOutputStream out;
+	private static Semaphore semaforo;
 	Proxy proxy;
 	private Socket sc;
-	private Socket scServidor;
-	ManejoDeCliente(Socket socketDelCliente, Socket socketDelServidor, Proxy pro )
+	//private Socket scServidor;
+	ManejoDeCliente(Socket socketDelCliente, Proxy pro,Semaphore sema )
 	{
 		super();
+		this.semaforo=sema;
 		sc=socketDelCliente;
-		scServidor=socketDelServidor;
+		//scServidor=socketDelServidor;
 		proxy=pro;
 	}
-	public void run()
+
+
+	private void SemaforoWait()
 	{
-		
-		try {	
-		System.out.println("Conexion solicitada de la ip: "+sc.getInetAddress());
-		//Cliente conectado	
-		in= new DataInputStream(sc.getInputStream());
-		out= new DataOutputStream(sc.getOutputStream());
-		String mensajeDelCliente;
-		//out.writeUTF("Mensaje del servidor: conexion exitosa");
-		//Inicio de sesion del usuario
-		boolean usuarioConectado=true;
-		while(usuarioConectado) {
-			mensajeDelCliente=in.readUTF();
-			System.out.println(sc.getInetAddress()+" :"+mensajeDelCliente);
-			////////////
-			
-			if(mensajeDelCliente.equals("1"))
+		Boolean b;
+		do {
+			try {
+				semaforo.acquire();
+				b = true;
+			}catch(Exception e)
 			{
-				////
-				System.out.println("Cantidad usuarios: "+(proxy.getCantUsuariosConectados()));
-				out.writeUTF(String.valueOf(proxy.getCantUsuariosConectados()));
-				/////
+				System.out.println(e);
+				b=false;
 			}
-			
-			///////////
-			if(mensajeDelCliente.trim().equals("Salir"))
-			{
-				sc.close();
-				proxy.setCantUsuariosConectados(proxy.getCantUsuariosConectados()-1);
-				usuarioConectado=false;
-			}
-			
-			
-		}		
-		System.out.println("desconectado el cliente"+sc.getInetAddress());
-	} catch (Exception e) {
-			
-			// TODO Auto-generated catch block
-			System.out.println("Se cayo la conexion en: "+sc.getInetAddress());
-			proxy.setCantUsuariosConectados(proxy.getCantUsuariosConectados()-1);
-			
+		}while(semaforo.availablePermits() != 0 && b.equals(true));
 	}
 
-	
-	
-}
+	public void run()
+	{
+		Socket scDataBase; 
+		String nombreUsuario;
+		String regionUsuario;
+		DataInputStream inDB;
+		DataOutputStream outDB;
+
+		try {	
+			System.out.println("Conexion solicitada de la ip: "+sc.getInetAddress()+" "+sc.getPort());
+			//Cliente conectado	
+			in= new DataInputStream(sc.getInputStream());
+			out= new DataOutputStream(sc.getOutputStream());
+			String mensajeDelCliente = " ";
+			String mensajeDeLaBD;
+			//out.writeUTF("Mensaje del servidor: conexion exitosa");
+			//Inicio de sesion del usuario
+			boolean usuarioConectado=true;
+			while(usuarioConectado) {
+				mensajeDelCliente=in.readUTF();
+
+				if(mensajeDelCliente.equals("lol"))//En el inicio de usuario de uncliente
+				{
+					regionUsuario=in.readUTF();//Recibe registro del usuario
+					this.SemaforoWait();//Comienza seccion critica
+
+					scDataBase= new Socket("127.0.0.1",7000);//Conectarse al database
+					inDB= new DataInputStream(scDataBase.getInputStream());
+					outDB= new DataOutputStream(scDataBase.getOutputStream());
+					outDB.writeUTF("Registrar");//Pedirle id al database
+					outDB.writeUTF(regionUsuario);// Se envia la region del usuario
+					out.writeUTF(inDB.readUTF());	//enviarle el id al usuario
+
+
+					//
+
+					scDataBase.close();
+					semaforo.release();//Termina seccion critica
+				}
+				if(mensajeDelCliente.equals("1"))
+				{
+					System.out.println("La conexion de"+sc.getInetAddress()+" "+sc.getPort()+ " pertenece al manager, enviar carga del proxy");
+					////
+					System.out.println("Cantidad usuarios: "+(proxy.getCantUsuariosConectados()));
+					out.writeUTF(String.valueOf(proxy.getCantUsuariosConectados()));
+					/////
+				}
+
+				
+				if(mensajeDelCliente.trim().equals("Salir"))
+				{
+					sc.close();
+					proxy.setCantUsuariosConectados(proxy.getCantUsuariosConectados()-1);
+					usuarioConectado=false;
+				}
+				if(mensajeDelCliente.trim().equals("IniciarSesion"))
+				{
+					System.out.println("Cliente "+sc.getInetAddress()+" "+sc.getPort() +" esta intentando iniciar sesion");
+					nombreUsuario=in.readUTF();//Recibe el nombre de usuario
+					this.SemaforoWait();//Comienza seccion critica
+					
+					scDataBase= new Socket("127.0.0.1",7000);//Conectarse al database
+					inDB= new DataInputStream(scDataBase.getInputStream());
+					outDB= new DataOutputStream(scDataBase.getOutputStream());
+					outDB.writeUTF("BuscarID");//Decirle al database que va a buscar un id ya existente
+					outDB.writeUTF(nombreUsuario);//Pasarle el id del usuario al DB
+					out.writeUTF(inDB.readUTF());//Espera confirmacion de la DB //Informar al usuario si su id existe o no
+			
+					
+					scDataBase.close();
+					
+
+					semaforo.release();//Termina seccion critica
+
+				}
+
+
+			}		
+			System.out.println("desconectado el cliente"+sc.getInetAddress()+" "+sc.getPort());
+		} catch (Exception e) {
+
+			// TODO Auto-generated catch block
+			System.out.println("Se cayo la conexion en: "+sc.getInetAddress()+" "+sc.getPort());
+			proxy.setCantUsuariosConectados(proxy.getCantUsuariosConectados()-1);
+			e.printStackTrace();
+		}
+
+
+
+	}
 }

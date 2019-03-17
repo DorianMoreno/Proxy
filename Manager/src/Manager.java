@@ -76,10 +76,12 @@ public class Manager{
 				in=new DataInputStream(sc.getInputStream());
 				out.writeUTF("1");
 				String mensaje=in.readUTF();
+				out.writeUTF("Salir");
 				cantidad.set(i, Integer.parseInt(mensaje));
 				sc.close();
+				System.out.println("Conexion exitosa con el proxy "+ip.get(i)+" "+port.get(i));
 			} catch (Exception e) {
-				System.out.println(e);
+				System.out.println("Hay un proxy caido en "+ip.get(i)+" "+port.get(i));
 				cantidad.set(i, -1);
 			}
 		}
