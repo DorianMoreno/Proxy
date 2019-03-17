@@ -113,8 +113,20 @@ public class Cliente extends Thread{
 						System.out.println("0.Salir");
 						System.out.println("1.Iniciar sesion");
 						System.out.println("2.Registrar");
-
+						System.out.println("3. Consultar proyectos y votar");
+						
 						enviar=teclado.nextLine();
+						
+						if(enviar.trim().equals("Consular proyectos y votar")|| enviar.trim().equals("3"))
+						{
+							out.writeUTF("ConsultarProyectos");
+							out.writeUTF(nombreInicioDeSesion);///Mandar id de usuario
+							out.writeUTF(territorioInicioSesion);///Mandar el territorio al proxy
+							///TODO: Imprimir los proyectos en los que el usuario puede votar
+							///TODO:Abrir espacio para que el usuario vote
+							///TODO: Enviar voto al proxy
+							///TODO: Confirmacion
+						}
 						if(enviar.trim().equals("Registrar") || enviar.trim().equals("2"))
 						{
 							//Thread.sleep(2000);

@@ -21,7 +21,35 @@ public class ManejoDeCliente extends Thread{
 		//scServidor=socketDelServidor;
 		proxy=pro;
 	}
-
+	public void tratoParaLaEntidadGubernamental(Socket scEntidad)
+	{
+		String mensajeDeLaEntidad;
+		System.out.println("El cliente "+scEntidad.getInetAddress()+":"+scEntidad.getPort()+" es una entidad gubernamental");
+		try
+		{
+			DataInputStream inEntidad= new DataInputStream(scEntidad.getInputStream());
+			DataOutputStream outEntidad= new DataOutputStream(scEntidad.getOutputStream());
+			while(true)
+			{
+				mensajeDeLaEntidad=inEntidad.readUTF();
+				if(mensajeDeLaEntidad.trim().equals("SubirConsulta"))
+				{
+					
+				}
+				if(mensajeDeLaEntidad.trim().contentEquals("VerResultadosConsulta"))
+				{
+					
+				}
+				
+				
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println("Algo paso con la de la entidad gubernamental");
+			return;
+		}
+	}
 
 	private void SemaforoWait()
 	{
@@ -60,13 +88,17 @@ public class ManejoDeCliente extends Thread{
 			boolean usuarioConectado=true;
 			while(usuarioConectado) {
 				mensajeDelCliente=in.readUTF();
-
+				if(mensajeDelCliente.equals("Entidad"))
+				{
+					//Abrir manejo de entidad mandando como parametro el socket
+					return;
+				}
 				if(mensajeDelCliente.equals("Registro"))//En el inicio de usuario de uncliente
 				{
 					regionUsuario=in.readUTF();//Recibe registro del usuario
 					hash = in.readUTF();
 					this.SemaforoWait();//Comienza seccion critica
-					
+
 					scDataBase= new Socket("127.0.0.1",7000);//Conectarse al database
 					inDB= new DataInputStream(scDataBase.getInputStream());
 					outDB= new DataOutputStream(scDataBase.getOutputStream());
@@ -90,12 +122,22 @@ public class ManejoDeCliente extends Thread{
 					/////
 				}
 
-				
+
 				if(mensajeDelCliente.trim().equals("Salir"))
 				{
 					sc.close();
 					proxy.setCantUsuariosConectados(proxy.getCantUsuariosConectados()-1);
 					usuarioConectado=false;
+				}
+				if(mensajeDelCliente.trim().equals("ConsultarProyectos"))
+				{
+					String idUsuario=in.readUTF();//Leer id del usuario
+						String territorioUsuario=in.readUTF();//Leer territorio del usuario
+						//TODO: Decirle al servidor que se va a consultar los proyectos
+						//TODO: Mandarle el id del usuario 
+						//TODO: Mandarle el territorio del usuario
+						//TODO: Esperar a que retorne los proyectos
+						//TODO: Enviarle al cliente los proyectos
 				}
 				if(mensajeDelCliente.trim().equals("IniciarSesion"))
 				{
@@ -103,7 +145,7 @@ public class ManejoDeCliente extends Thread{
 					nombreUsuario=in.readUTF();//Recibe el nombre de usuario
 					hashUsuario = in.readUTF();//Recibe el hash de la contraseña del usuario
 					this.SemaforoWait();//Comienza seccion critica
-					
+
 					scDataBase= new Socket("127.0.0.1",7000);//Conectarse al database
 					inDB= new DataInputStream(scDataBase.getInputStream());
 					outDB= new DataOutputStream(scDataBase.getOutputStream());
@@ -112,10 +154,10 @@ public class ManejoDeCliente extends Thread{
 					outDB.writeUTF(hashUsuario);//Pasarle el hash de la contraseña del usuario al DB
 					out.writeUTF(inDB.readUTF());//Espera confirmacion de la DB //Informar al usuario si su id existe o no
 					out.writeUTF(inDB.readUTF());//Si el usuario existe manda su territorio, sino envía un "false"
-			
-					
+
+
 					scDataBase.close();
-					
+
 
 					semaforo.release();//Termina seccion critica
 
