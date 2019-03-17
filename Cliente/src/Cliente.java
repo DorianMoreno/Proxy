@@ -95,7 +95,7 @@ public class Cliente extends Thread{
 		String mensaje;
 		this.sesionIniciada=false;
 
-		try { //Intentemos hacer conexion con el register
+		try { //Intentemos hacer conexion con el manager
 
 			Socket scProxy= binding(ipServidor, puerto);
 			if(scProxy==null)

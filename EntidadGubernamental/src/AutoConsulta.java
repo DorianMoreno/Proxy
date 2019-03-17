@@ -48,58 +48,43 @@ public class AutoConsulta extends Thread {
 	private boolean mandar(Consulta consulta)
 	{
 		semaforoWait();
-		Socket scManager = null;
 		Socket scProxy = null;
+		DataInputStream in = null;
+		DataOutputStream out = null;
 		String mensaje;
 		try {
-			scManager = new Socket(ipManager, portManager);
-			DataInputStream inManager= new DataInputStream(scManager.getInputStream());
-			DataOutputStream outManager= new DataOutputStream(scManager.getOutputStream());
+			scProxy = EG.binding();
+		}catch(Exception e)
+		{
+			System.out.println("No se pudo conectar con el manager de conexiones");
+			return false;
+		}
+		if(scProxy==null)
+		{
+			System.out.println("No se pudo encontrar un proxy");
+			return false;
+		}
+		System.out.println("Conectado exitosamente con el proxy");
+		try {
+			in=new DataInputStream(scProxy.getInputStream());
+			out=new DataOutputStream(scProxy.getOutputStream());				
 			
-			String ipProxy = inManager.readUTF();
-			Integer portProxy = Integer.valueOf(inManager.readUTF());
-			
-			scProxy = new Socket(ipProxy, portProxy);
-			
-			if(scProxy.isBound())
-			{
-				outManager.writeUTF("1");
-			}
-			else
-			{
-				outManager.writeUTF("1");
-			}
-			scManager.close();
-			
-			DataInputStream inProxy= new DataInputStream(scProxy.getInputStream());
-			DataOutputStream outProxy= new DataOutputStream(scProxy.getOutputStream());
-			
-			outProxy.writeUTF("Entidad");
+			out.writeUTF("Entidad");
 			do {
-				outProxy.writeUTF(consulta.getNombre());
-				outProxy.writeUTF(consulta.getTerritorios());
-				mensaje = inProxy.readUTF();
+				out.writeUTF(consulta.getNombre());
+				out.writeUTF(consulta.getTerritorios());
+				mensaje = in.readUTF();
 			}while(mensaje.equals("2"));
-			
 			scProxy.close();
 			semaforo.release();
 			return true;
-		}catch(Exception e)
+		}
+		catch(Exception e)
 		{
-			System.out.println(e);
+			System.out.println("Conexion con el Proxy interrumpida, reintentando conectar...");
 		}
 		
 		
-		
-		if(scManager != null)
-			if(!scManager.isClosed())
-			{
-				try {
-					scManager.close();
-				} catch (IOException e) {
-					System.out.println(e);
-				}
-			}
 		if(scProxy != null)
 			if(!scProxy.isClosed())
 			{
@@ -110,7 +95,6 @@ public class AutoConsulta extends Thread {
 				}
 			}
 		
-		
 		semaforo.release();
 		return false;
 	}
@@ -120,7 +104,7 @@ public class AutoConsulta extends Thread {
 		consultas.sort(new SortConsultas());
 		for(Consulta con: consultas)
 		{
-			mandar(con);
+			while(!mandar(con));
 		}
 	}
 }

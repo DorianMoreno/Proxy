@@ -1,3 +1,6 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,6 +61,34 @@ public class EntidadGubernamental {
 	public static void main(String[] args) {
 		EntidadGubernamental EG = new EntidadGubernamental();
 		EG.menu();
+	}
+	
+	public Socket binding() throws Exception
+	{
+		Socket scManager= new Socket(ipManager, portManager);
+
+		DataInputStream in = new DataInputStream(scManager.getInputStream());
+		DataOutputStream out = new DataOutputStream(scManager.getOutputStream());
+
+		//Esperar a que el manager le diga al cliente a donde conectarse
+
+		String ipAConectar=in.readUTF();  //Aqui se obtiene la ip de donde se va a conectar el cliente
+		int puertoAConectar= Integer.parseInt(in.readUTF()); //Aqui se obtiene el puerto en donde se va a conectar el cliente                             
+		if(ipAConectar.equals("-1"))//Si no se encontro ningun proxy disponible
+		{
+			System.out.println("No se pudo encontrar ningun proxy disponible");//No se encontro ningun proxy disponible
+			out.writeUTF("1");
+			scManager.close();
+			return null;  //Terminar proceso
+		}
+
+		Socket scProxy=new Socket (ipAConectar, puertoAConectar); //Conectar con proxy
+		
+		out.writeUTF("1");
+		scManager.close();//El cliente cierra conexion con el Manager
+
+		System.out.println("Conexion con " + scProxy.getInetAddress() + ":" + scProxy.getPort());
+		return scProxy;
 	}
 
 	private void mandarConsulta()
