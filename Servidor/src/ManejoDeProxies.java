@@ -52,6 +52,8 @@ public class ManejoDeProxies extends Thread {
 				mensajeDelProxy = in.readUTF();
 				territorio = mensajeDelProxy;
 				server.ingresarConsulta(nombreConsulta, usuario, territorio);
+				out.writeUTF("2");
+				
 			}
 			//Pedir lista de consultas
 			else if(mensajeDelProxy.equals("2")) {

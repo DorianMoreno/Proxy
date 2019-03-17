@@ -7,22 +7,25 @@ import java.net.SocketException;
 import java.util.concurrent.Semaphore;
 
 public class ManejoDeCliente extends Thread{
-	DataInputStream in;
-	DataOutputStream out;
-	private static Semaphore semaforo;
-	Proxy proxy;
-	private Socket sc;
-	//private Socket scServidor;
-	ManejoDeCliente(Socket socketDelCliente, Proxy pro,Semaphore sema )
+	private DataInputStream in;
+	private DataOutputStream out;
+	private Semaphore semaforo;
+	private Proxy proxy;
+	private final Socket sc;
+	private String ipServidor;
+	private Integer portServidor;
+	public ManejoDeCliente(Socket socketDelCliente, Proxy pro,Semaphore sema, String ipServidor, Integer portServidor)
 	{
 		super();
 		this.semaforo=sema;
 		sc=socketDelCliente;
-		//scServidor=socketDelServidor;
 		proxy=pro;
+		this.ipServidor = ipServidor;
+		this.portServidor = portServidor;
 	}
 	public void tratoParaLaEntidadGubernamental(Socket scEntidad)
 	{
+		Socket scServer = null;
 		String mensajeDeLaEntidad;
 		System.out.println("El cliente "+scEntidad.getInetAddress()+":"+scEntidad.getPort()+" es una entidad gubernamental");
 		try
@@ -34,15 +37,44 @@ public class ManejoDeCliente extends Thread{
 				mensajeDeLaEntidad=inEntidad.readUTF();
 				if(mensajeDeLaEntidad.trim().equals("SubirConsulta"))
 				{
-					
+					try {
+						scServer = new Socket(ipServidor, portServidor);
+						DataInputStream inServer = new DataInputStream(scServer.getInputStream());
+						DataOutputStream outServer = new DataOutputStream(scServer.getOutputStream());
+						
+						outServer.writeUTF(String.valueOf(scEntidad.getInetAddress()));
+						outServer.writeUTF(inEntidad.readUTF());
+						outServer.writeUTF(inEntidad.readUTF());
+						outEntidad.writeUTF(inServer.readUTF());
+						scServer.close();
+						
+					}catch(Exception e)
+					{
+						System.out.println("No se pudo establecer conexión con el servidor");
+					}
 				}
-				if(mensajeDeLaEntidad.trim().contentEquals("VerResultadosConsulta"))
+				else if(mensajeDeLaEntidad.trim().contentEquals("VerResultadosConsulta"))
 				{
-					
+					try {
+						scServer = new Socket(ipServidor, portServidor);
+						DataInputStream inServer = new DataInputStream(scServer.getInputStream());
+						DataOutputStream outServer = new DataOutputStream(scServer.getOutputStream());
+						
+						outServer.writeUTF(String.valueOf(scEntidad.getInetAddress()));
+						outServer.writeUTF(inEntidad.readUTF());
+						outServer.writeUTF(inEntidad.readUTF());
+						outEntidad.writeUTF(inServer.readUTF());
+						scServer.close();
+						
+					}catch(Exception e)
+					{
+						System.out.println("No se pudo establecer conexión con el servidor");
+					}
 				}
-				
-				
+				if(mensajeDeLaEntidad.trim().contentEquals("Salir"))
+					break;
 			}
+			scEntidad.close();
 		}
 		catch(Exception e)
 		{
@@ -90,7 +122,7 @@ public class ManejoDeCliente extends Thread{
 				mensajeDelCliente=in.readUTF();
 				if(mensajeDelCliente.equals("Entidad"))
 				{
-					//Abrir manejo de entidad mandando como parametro el socket
+					tratoParaLaEntidadGubernamental(sc);
 					return;
 				}
 				if(mensajeDelCliente.equals("Registro"))//En el inicio de usuario de uncliente

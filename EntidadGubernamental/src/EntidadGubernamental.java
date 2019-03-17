@@ -25,10 +25,12 @@ public class EntidadGubernamental {
 	private String ipManager;
 	
 	private Integer portManager;
+	
+	private AutoConsulta auto;
 		
 	public EntidadGubernamental()
 	{
-		ipManager = "127.0.0.1";
+		ipManager = "25.3.250.74";
 		portManager = 5500;
 		semaforo = new Semaphore(1, true);
 		consultas = new ArrayList<Consulta>();
@@ -41,21 +43,21 @@ public class EntidadGubernamental {
 		try {
 			List<String> allLines = Files.readAllLines(path, StandardCharsets.UTF_8);
 			nombre = allLines.get(0);
+			System.out.println(nombre);
 			for(int i=1 ; i<allLines.size() ; ++i)
 			{
 				if(allLines.get(i).equals("")) continue;
 				
 				String[] parts = allLines.get(i).split(" ");
-				Consulta nueva = new Consulta(parts[1], Integer.valueOf(parts[0]));
-				for(int j=2 ; j<parts.length ; ++j)
-				{
-					nueva.addTerritorio(parts[j]);
-				}
+				Consulta nueva = new Consulta(parts[1], Integer.valueOf(parts[0]), parts[2]);
+				
 				consultas.add(nueva);
 			}
 		}catch(Exception e) {
 			System.out.println(e);
 		}
+		auto = new AutoConsulta(this, semaforo, consultas);
+		auto.start();
 	}
 	
 	public static void main(String[] args) {

@@ -1,0 +1,12 @@
+Entidad
+2342 abcd ter1
+2342342 efg ter1
+423 hijk ter1
+423 lmno ter1
+423 pqrs ter1
+4 tuvwx ter1
+234 yza ter1
+23 bcde ter1
+423 fgh terf1
+32 ij ter1
+4234 klm ter1

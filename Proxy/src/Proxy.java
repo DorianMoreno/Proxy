@@ -52,7 +52,7 @@ public class Proxy extends Thread {
 			{
 				scCliente=servidor.accept();
 				this.cantUsuariosConectados++;
-				ManejoDeCliente MC=new ManejoDeCliente(scCliente,this,this.semaforo);
+				ManejoDeCliente MC=new ManejoDeCliente(scCliente, this, this.semaforo, "127.0.0.1", 6000);
 				MC.start();
 			}
 		} catch (IOException e) {

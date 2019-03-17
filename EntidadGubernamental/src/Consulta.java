@@ -1,23 +1,21 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public class Consulta {
 	private String nombre;
 	
 	private Integer tiempo;
 	
-	private List<String> territorios;
+	private String territorio;
 	
-	public Consulta(String nombre, Integer tiempo)
+	public Consulta(String nombre, Integer tiempo, String territorio)
 	{
-		territorios = new ArrayList<String>();
+		territorio = new String();
 		this.tiempo = tiempo;
 		this.nombre = nombre;
+		this.territorio = territorio;
 	}
 	
-	public void addTerritorio(String territorio)
+	public void setTerritorio(String territorio)
 	{
-		territorios.add(territorio);
+		this.territorio = territorio;
 	}
 
 	public Integer getTiempo() {
@@ -28,12 +26,7 @@ public class Consulta {
 		return nombre;
 	}
 	
-	public String getTerritorios(){
-		String terr = new String();
-		for(String t: territorios)
-		{
-			terr = terr + " " + t;
-		}
-		return terr.trim();
+	public String getTerritorio(){
+		return territorio;
 	}
 }
