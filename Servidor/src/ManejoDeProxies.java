@@ -1,6 +1,7 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 public class ManejoDeProxies extends Thread {
@@ -52,8 +53,13 @@ public class ManejoDeProxies extends Thread {
 				nombreConsulta = mensajeDelProxy;
 				mensajeDelProxy = in.readUTF();
 				territorio = mensajeDelProxy;
-				server.ingresarConsulta(nombreConsulta, usuario, territorio);
-				out.writeUTF("1");
+				if(server.existeConsulta(usuario, nombreConsulta))
+					out.writeUTF("-1");
+				else
+				{
+					server.ingresarConsulta(nombreConsulta, usuario, territorio);
+					out.writeUTF("1");
+				}
 			}
 			//Pedir lista de consultas
 			else if(mensajeDelProxy.equals("2")) {
@@ -63,13 +69,24 @@ public class ManejoDeProxies extends Thread {
 				territorio = mensajeDelProxy;
 				server.consultasParaUsuario(usuario, territorio);
 			}
+			else if(mensajeDelProxy.equals("3")) {
+				mensajeDelProxy = in.readUTF();
+				usuario = mensajeDelProxy;
+				List<Consulta> votadas = server.consultasPorEntidad(usuario);
+				out.writeUTF(String.valueOf(votadas.size()));
+				for(Consulta con: votadas)
+				{
+					out.writeUTF(con.print());
+				}
+			}
 			
 		} catch (Exception e) {
 				
 				// TODO Auto-generated catch block
+				e.printStackTrace();
 				System.out.println("Se cayo el proxy que esta en: "+sc.getInetAddress());
 		
 		}
-	semaforo.release();	
+		semaforo.release();	
 	}
 }

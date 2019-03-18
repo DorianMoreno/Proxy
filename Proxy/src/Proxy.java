@@ -8,8 +8,8 @@ public class Proxy extends Thread {
 	public Integer getCantUsuariosConectados() {
 		return cantUsuariosConectados;
 	}
-	public void setCantUsuariosConectados(Integer cantUsuariosConectados) {
-		this.cantUsuariosConectados = cantUsuariosConectados;
+	public void reducirUsuarios() {
+		this.cantUsuariosConectados--;
 	}
 	
 	private Integer cantUsuariosConectados =0;

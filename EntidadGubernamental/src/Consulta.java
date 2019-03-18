@@ -5,16 +5,18 @@ public class Consulta {
 	
 	private String territorio;
 	
-	public Consulta(String nombre, Integer tiempo, String territorio)
+
+	public Consulta(String nombre, String territorio)
 	{
-		territorio = new String();
-		this.tiempo = tiempo;
+		this.tiempo = 0;
 		this.nombre = nombre;
 		this.territorio = territorio;
 	}
 	
-	public void setTerritorio(String territorio)
+	public Consulta(String nombre, String territorio, Integer tiempo)
 	{
+		this.tiempo = tiempo;
+		this.nombre = nombre;
 		this.territorio = territorio;
 	}
 

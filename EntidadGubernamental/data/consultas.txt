@@ -6,7 +6,7 @@ Entidad
 423 pqrs ter1
 4 tuvwx ter1
 234 yza ter1
-23 bcde ter1
+23 tuvwx ter1
 423 fgh terf1
 32 ij ter1
 4234 klm ter1

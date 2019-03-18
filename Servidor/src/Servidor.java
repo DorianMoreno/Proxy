@@ -1,5 +1,3 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -53,7 +51,7 @@ public class Servidor{
 	
 	//Retorna consultas posibles por territorio
 	public List<Consulta> consultasPorTerritorio(String territorio){
-		List<Consulta> listaConsultasTerritorio = null;
+		List<Consulta> listaConsultasTerritorio = new ArrayList<Consulta>();
 		for(int i=0; i<this.listaConsultas.size(); i++) {
 			if(this.listaConsultas.get(i).getTerritorio().equals(territorio)) {
 				listaConsultasTerritorio.add(this.listaConsultas.get(i));
@@ -62,15 +60,36 @@ public class Servidor{
 		return listaConsultasTerritorio;
 	}
 	
+	//Retorna consultas posibles por entidad
+	public List<Consulta> consultasPorEntidad(String entidad){
+		List<Consulta> listaConsultasEntidad = new ArrayList<Consulta>();
+		for(int i=0; i<this.listaConsultas.size(); i++) {
+			if(this.listaConsultas.get(i).getDireccionOrigen().equals(entidad)) {
+				listaConsultasEntidad.add(this.listaConsultas.get(i));
+			}
+		}
+		return listaConsultasEntidad;
+	}
+	
 	//Retornar lista de consultas sin votar
 	public List<Consulta> consultasSinVotar(List<Consulta> consultas, String usuario){
-		List<Consulta> listaDefinitiva = null;
+		List<Consulta> listaDefinitiva = new ArrayList<Consulta>();
 		for(int i = 0; i<consultas.size(); i++) {
 			if(consultas.get(i).comprobar(usuario)) {
 				listaDefinitiva.add(consultas.get(i));
 			}
 		}
 		return listaDefinitiva;
+	}
+	
+	public boolean existeConsulta(String usuario, String consulta)
+	{
+		for(Consulta con: listaConsultas)
+		{
+			if(con.getDireccionOrigen().equals(usuario) && con.getNombreConsulta().equals(consulta))
+				return true;
+		}
+		return false;
 	}
 	
 	public List<Consulta> getListaConsultas() {

@@ -43,7 +43,7 @@ public class ManejoDeCliente extends Thread{
 						DataOutputStream outServer = new DataOutputStream(scServer.getOutputStream());
 						
 						outServer.writeUTF("1");
-						outServer.writeUTF(String.valueOf(scEntidad.getInetAddress()));
+						outServer.writeUTF(inEntidad.readUTF());
 						outServer.writeUTF(inEntidad.readUTF());
 						outServer.writeUTF(inEntidad.readUTF());
 						outEntidad.writeUTF(inServer.readUTF());
@@ -52,6 +52,7 @@ public class ManejoDeCliente extends Thread{
 					}catch(Exception e)
 					{
 						System.out.println("No se pudo establecer conexión con el servidor");
+						outEntidad.writeUTF("EXCEPTION-FOUND");
 					}
 				}
 				else if(mensajeDeLaEntidad.trim().contentEquals("VerResultadosConsulta"))
@@ -61,15 +62,19 @@ public class ManejoDeCliente extends Thread{
 						DataInputStream inServer = new DataInputStream(scServer.getInputStream());
 						DataOutputStream outServer = new DataOutputStream(scServer.getOutputStream());
 						
-						outServer.writeUTF(String.valueOf(scEntidad.getInetAddress()));
+						outServer.writeUTF("3");
 						outServer.writeUTF(inEntidad.readUTF());
-						outServer.writeUTF(inEntidad.readUTF());
-						outEntidad.writeUTF(inServer.readUTF());
+						int n = Integer.valueOf(inServer.readUTF());
+						outEntidad.writeUTF(String.valueOf(n));
+						for(int i=0 ; i<n ; ++i)
+						{
+							outEntidad.writeUTF(inServer.readUTF());
+						}
 						scServer.close();
-						
 					}catch(Exception e)
 					{
 						System.out.println("No se pudo establecer conexión con el servidor");
+						outEntidad.writeUTF("EXCEPTION-FOUND");
 					}
 				}
 				if(mensajeDeLaEntidad.trim().contentEquals("Salir"))
@@ -80,8 +85,8 @@ public class ManejoDeCliente extends Thread{
 		catch(Exception e)
 		{
 			System.out.println("Algo paso con la de la entidad gubernamental");
-			return;
 		}
+		proxy.reducirUsuarios();
 	}
 
 	private void SemaforoWait()
@@ -159,7 +164,7 @@ public class ManejoDeCliente extends Thread{
 				if(mensajeDelCliente.trim().equals("Salir"))
 				{
 					sc.close();
-					proxy.setCantUsuariosConectados(proxy.getCantUsuariosConectados()-1);
+					proxy.reducirUsuarios();
 					usuarioConectado=false;
 				}
 				if(mensajeDelCliente.trim().equals("ConsultarProyectos"))
@@ -203,7 +208,7 @@ public class ManejoDeCliente extends Thread{
 
 			// TODO Auto-generated catch block
 			System.out.println("Se cayo la conexion en: "+sc.getInetAddress()+" "+sc.getPort());
-			proxy.setCantUsuariosConectados(proxy.getCantUsuariosConectados()-1);
+			proxy.reducirUsuarios();
 			e.printStackTrace();
 		}
 

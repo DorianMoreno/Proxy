@@ -1,5 +1,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -49,14 +50,14 @@ public class EntidadGubernamental {
 				if(allLines.get(i).equals("")) continue;
 				
 				String[] parts = allLines.get(i).split(" ");
-				Consulta nueva = new Consulta(parts[1], Integer.valueOf(parts[0]), parts[2]);
+				Consulta nueva = new Consulta(parts[1], parts[2], Integer.valueOf(parts[0]));
 				
 				consultas.add(nueva);
 			}
 		}catch(Exception e) {
 			System.out.println(e);
 		}
-		auto = new AutoConsulta(this, semaforo, consultas);
+		auto = new AutoConsulta(this, consultas);
 		auto.start();
 	}
 	
@@ -92,15 +93,157 @@ public class EntidadGubernamental {
 		System.out.println("Conexion con " + scProxy.getInetAddress() + ":" + scProxy.getPort());
 		return scProxy;
 	}
-
-	private void mandarConsulta()
+	
+	public void semaforoWait()
 	{
+		Boolean b;
+		do {
+			try {
+				semaforo.acquire();
+			
+				b = true;
+			}catch(Exception e)
+			{
+				System.out.println(e);
+				b=false;
+			}
+		}while(semaforo.availablePermits() != 0 && b.equals(true));
+	}
+
+	
+	public void mandar(Consulta consulta)
+	{
+		System.out.println("Enviada consulta " + consulta.getNombre() + "(" + semaforo.availablePermits() + ")");
+		semaforoWait();
+		Socket scProxy = null;
+		DataInputStream in = null;
+		DataOutputStream out = null;
+		String mensaje;
+		try {
+			scProxy = binding();
+		}catch(Exception e)
+		{
+			System.out.println("No se pudo conectar con el manager de conexiones");
+			return;
+		}
+		if(scProxy==null)
+		{
+			System.out.println("No se pudo encontrar un proxy");
+			return;
+		}
+		System.out.println("Conectado exitosamente con el proxy");
+		try {
+			in=new DataInputStream(scProxy.getInputStream());
+			out=new DataOutputStream(scProxy.getOutputStream());				
+			
+			out.writeUTF("Entidad");
+			do {
+				out.writeUTF("SubirConsulta");
+				out.writeUTF(nombre);
+				out.writeUTF(consulta.getNombre());
+				out.writeUTF(consulta.getTerritorio());
+				mensaje = in.readUTF();
+				if(mensaje.equals("EXCEPTION-FOUND"))
+					System.out.println("No se pudo conectar con el servidor, reconectando...");
+			}while(mensaje.equals("EXCEPTION-FOUND"));
+			if(mensaje.equals("-1"))
+				System.out.println("Ya existe la consulta en el servidor");
+			out.writeUTF("Salir");
+			scProxy.close();
+			semaforo.release();
+			return;
+		}
+		catch(Exception e)
+		{
+			System.out.println("Conexion con el Proxy interrumpida, reintentando conectar...");
+		}
 		
+		if(scProxy != null)
+			if(!scProxy.isClosed())
+			{
+				try {
+					scProxy.close();
+				} catch (IOException e) {
+					System.out.println(e);
+				}
+			}
+		
+		semaforo.release();
+		return;
 	}
 	
 	private void consultarVotos()
-	{
+	{		
+		System.out.println("Solicitando las consultas");
+		semaforoWait();
+		Socket scProxy = null;
+		DataInputStream in = null;
+		DataOutputStream out = null;
+		String mensaje;
+		try {
+			scProxy = binding();
+		}catch(Exception e)
+		{
+			System.out.println("No se pudo conectar con el manager de conexiones");
+			return;
+		}
+		if(scProxy==null)
+		{
+			System.out.println("No se pudo encontrar un proxy");
+			return;
+		}
+		System.out.println("Conectado exitosamente con el proxy");
+		try {
+			in=new DataInputStream(scProxy.getInputStream());
+			out=new DataOutputStream(scProxy.getOutputStream());				
+			
+			out.writeUTF("Entidad");
+			do {
+				out.writeUTF("VerResultadosConsulta");
+				out.writeUTF(nombre);
+				mensaje = in.readUTF();
+				if(mensaje.equals("EXCEPTION-FOUND"))
+					System.out.println("No se pudo conectar con el servidor, reconectando...");
+			}while(mensaje.equals("EXCEPTION-FOUND"));
+			int n = Integer.valueOf(mensaje);
+			List<String> lines = new ArrayList<String>();
+			for(int i=0 ; i<n ; ++i )
+			{
+				lines.add(in.readUTF());
+			}
+			if(lines.size() == 0)
+			{
+				System.out.println("Esta entidad gubernamental no tiene consultas");
+			}
+			else {
+				System.out.println("Nombre\t\tTerritorio\tbajos\tmedios\taltos");
+				for(String s: lines)
+				{
+					System.out.println(s);
+				}
+			}
+			out.writeUTF("Salir");
+			scProxy.close();
+			semaforo.release();
+			return;
+		}
+		catch(Exception e)
+		{
+			System.out.println("Conexion con el Proxy interrumpida, reintentando conectar...");
+		}
 		
+		if(scProxy != null)
+			if(!scProxy.isClosed())
+			{
+				try {
+					scProxy.close();
+				} catch (IOException e) {
+					System.out.println(e);
+				}
+			}
+		
+		semaforo.release();
+		return;
 	}
 	
 	private void menu()
@@ -108,6 +251,8 @@ public class EntidadGubernamental {
 		Scanner teclado;
 		teclado=new Scanner(System.in);
 		String opcion;
+		String nombreConsulta;
+		String territorioConsulta;
 		do {
 			System.out.println("¿Qué desea hacer?");
 			System.out.println("1. Subir una consulta (no listada en el archivo de texto)");
@@ -118,14 +263,22 @@ public class EntidadGubernamental {
 			
 			if(opcion.equals("1"))
 			{
-				
+				System.out.println("Ingresa el nombre de la consulta a insertar");
+				nombreConsulta = teclado.nextLine();
+				System.out.println("Escribe el territorio sobre el que se va a hacer la consulta");
+				territorioConsulta = teclado.nextLine();
+				mandar(new Consulta(nombreConsulta, territorioConsulta));
 			}
 			else if(opcion.equals("2"))
 			{
-				
+				consultarVotos();
 			}
 			
 		}while(!opcion.equals("3"));
 		
+	}
+
+	public String getNombre() {
+		return nombre;
 	}
 }

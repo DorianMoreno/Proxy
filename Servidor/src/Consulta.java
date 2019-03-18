@@ -1,5 +1,5 @@
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * 
@@ -19,8 +19,8 @@ public class Consulta {
 	
 	Consulta(String nombreConsulta, String direccionOrigen, String territorio){
 		this.cantidadVotosTotales = 0;
-		this.usuarioVotaron = null;
-		this.votos = null;
+		this.usuarioVotaron = new ArrayList<String>();
+		this.votos = new ArrayList<String>();
 		this.nombreConsulta = nombreConsulta;
 		this.direccionOrigen = direccionOrigen;
 		this.territorio = territorio;
@@ -28,7 +28,11 @@ public class Consulta {
 	
 	//Retorna resultado de los votos
 	public int[] resultadosVotos(){
-		int[] vector = null;
+		int[] vector = new int[3];
+		for(int i=0 ; i<3 ; ++i)
+		{
+			vector[i] = 0;
+		}
 		for(int i=0; i<this.votos.size(); i++) {
 			//Alto, Medio, Bajo
 			if(votos.get(i).equals("A")) { 
@@ -68,6 +72,11 @@ public class Consulta {
 		return true;
 	}
 	
+	public String print()
+	{
+		int[] vector = resultadosVotos();
+		return nombreConsulta + "\t\t" +  territorio + "\t\t" + vector[2] + "\t" + vector[1] + "\t" + vector[0];
+	}
 	
 	//Gets and Sets
 	public int getCantidadVotosTotales() {
