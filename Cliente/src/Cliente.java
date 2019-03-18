@@ -8,42 +8,53 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Cliente extends Thread{
-	String nombreInicioDeSesion;
-	String hashInicioDeSesion;
-	String territorioInicioSesion;
-	boolean sesionIniciada;
+	private String nombreInicioDeSesion;
+	
+	private String hashInicioDeSesion;
+	
+	private String territorioInicioSesion;
+		
+	private String ipManager;
+	
+	private Integer portManager;
+	
+	public Cliente()
+	{
+		ipManager = "127.0.0.1";
+		portManager = 5500;
+	}
+	
 	//En la lista de proxies buscar los que tienen menos carga.
 	//Si se cae el proxy, buscar a los otros
 	public static void main(String [] args) throws InterruptedException//Solo mientras se ejecute en consola
 	{
-
-		String ipServidor="127.0.0.1";
-		new Cliente().conectarConServidor(ipServidor);
+		Cliente cliente = new Cliente();
+		cliente.conectarConServidor();
 	}
-	public  Socket binding(String ipServidor, int puerto) throws UnknownHostException, IOException 
+	public Socket binding() throws Exception
 	{
-		Socket scRegister= new Socket(ipServidor, puerto);
-
-		DataInputStream in=new DataInputStream(scRegister.getInputStream());
-		DataOutputStream out=new DataOutputStream(scRegister.getOutputStream());
-
-		//Esperar a que el manager le diga al cliente a donde conectarse
-
-		String ipAConectar=in.readUTF();  //Aqui se obtiene la ip de donde se va a conectar el cliente
-		int puertoAConectar= Integer.parseInt(in.readUTF()); //Aqui se obtiene el puerto en donde se va a conectar el cliente                             
-		if(ipAConectar.equals("-1"))//Si no se encontro ningun proxy disponible
-		{
-			System.out.println("No se pudo encontrar ningun proxy disponible");//No se encontro ningun proxy disponible
-			out.writeUTF("1");
-			scRegister.close();
-			return null;  //Terminar proceso camilo es un puto camilo es un puto camilo es un puto camilo es un puto
-		}
+		String ipAConectar;
+		int puertoAConectar;
+		do {
+			Socket scManager= new Socket(ipManager, portManager);
+	
+			DataInputStream in = new DataInputStream(scManager.getInputStream());
+			DataOutputStream out = new DataOutputStream(scManager.getOutputStream());
+	
+			//Esperar a que el manager le diga al cliente a donde conectarse
+	
+			ipAConectar=in.readUTF();  //Aqui se obtiene la ip de donde se va a conectar el cliente
+			puertoAConectar= Integer.parseInt(in.readUTF()); //Aqui se obtiene el puerto en donde se va a conectar el cliente 
+			out.writeUTF("1"); 
+			scManager.close();                           
+			if(ipAConectar.equals("-1"))//Si no se encontro ningun proxy disponible
+			{
+				System.out.println("No se pudo encontrar ningun proxy disponible");//No se encontro ningun proxy disponible
+			}
+		}while(ipAConectar.equals("-1"));
 
 		Socket scProxy=new Socket (ipAConectar, puertoAConectar); //Conectar con proxy
 		
-		out.writeUTF("1");
-		scRegister.close();//El cliente cierra conexion con el Register
-
 		System.out.println("Conexion con " + scProxy.getInetAddress() + ":" + scProxy.getPort());
 		return scProxy;
 	}
@@ -110,23 +121,19 @@ public class Cliente extends Thread{
 		}
 	}
 
-	public void conectarConServidor(String ipServidor) 
+	public void conectarConServidor() 
 	{
 
 		this.nombreInicioDeSesion="vacio";
 		Scanner teclado;
-		int puerto=5500;
 		DataInputStream in;
 		String enviar;
 		DataOutputStream out;
 		String mensaje;
-		this.sesionIniciada=false;
 
 		try { //Intentemos hacer conexion con el manager
 
-			Socket scProxy= binding(ipServidor, puerto);
-			if(scProxy==null)
-				return;
+			Socket scProxy= binding();
 			System.out.println("Conectado exitosamente con el proxy");//Salida en consola
 			boolean estadoConectado=false;
 			//Inicio de sesion
@@ -173,7 +180,6 @@ public class Cliente extends Thread{
 							if(mensaje.trim().equals("true"))
 							{
 								try {
-									this.sesionIniciada=true;
 									estadoConectado=true;
 									interaccionConElProxy( estadoConectado, scProxy, teclado);//Comienza la interaccion normal con el proxy
 
@@ -182,12 +188,8 @@ public class Cliente extends Thread{
 								{
 									System.out.println("Proxy desconectado de forma abrupta reconectando e iniciando sesion otra vez...");
 									scProxy.close();
-									scProxy=this.binding(ipServidor, puerto);
-									if(scProxy==null)
-									{
-										return;
-									}
-
+									scProxy=this.binding();
+									
 									interaccionConElProxy(estadoConectado, scProxy, teclado); 
 								}
 							}
@@ -213,11 +215,7 @@ public class Cliente extends Thread{
 					//Reeconectar con el proxy
 					System.out.println("Proxy desconectado de forma abrupta");
 					scProxy.close();
-					scProxy= binding(ipServidor, puerto);
-					if(scProxy==null)
-					{
-						return;
-					}
+					scProxy= binding();
 					System.out.println("Conexion reestablecida\n");
 				}
 			}

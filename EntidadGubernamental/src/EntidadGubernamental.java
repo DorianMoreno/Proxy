@@ -68,28 +68,28 @@ public class EntidadGubernamental {
 	
 	public Socket binding() throws Exception
 	{
-		Socket scManager= new Socket(ipManager, portManager);
-
-		DataInputStream in = new DataInputStream(scManager.getInputStream());
-		DataOutputStream out = new DataOutputStream(scManager.getOutputStream());
-
-		//Esperar a que el manager le diga al cliente a donde conectarse
-
-		String ipAConectar=in.readUTF();  //Aqui se obtiene la ip de donde se va a conectar el cliente
-		int puertoAConectar= Integer.parseInt(in.readUTF()); //Aqui se obtiene el puerto en donde se va a conectar el cliente                             
-		if(ipAConectar.equals("-1"))//Si no se encontro ningun proxy disponible
-		{
-			System.out.println("No se pudo encontrar ningun proxy disponible");//No se encontro ningun proxy disponible
-			out.writeUTF("1");
-			scManager.close();
-			return null;  //Terminar proceso
-		}
+		String ipAConectar;
+		int puertoAConectar;
+		do {
+			Socket scManager= new Socket(ipManager, portManager);
+	
+			DataInputStream in = new DataInputStream(scManager.getInputStream());
+			DataOutputStream out = new DataOutputStream(scManager.getOutputStream());
+	
+			//Esperar a que el manager le diga al cliente a donde conectarse
+	
+			ipAConectar=in.readUTF();  //Aqui se obtiene la ip de donde se va a conectar el cliente
+			puertoAConectar= Integer.parseInt(in.readUTF()); //Aqui se obtiene el puerto en donde se va a conectar el cliente 
+			out.writeUTF("1"); 
+			scManager.close();                           
+			if(ipAConectar.equals("-1"))//Si no se encontro ningun proxy disponible
+			{
+				System.out.println("No se pudo encontrar ningun proxy disponible");//No se encontro ningun proxy disponible
+			}
+		}while(ipAConectar.equals("-1"));
 
 		Socket scProxy=new Socket (ipAConectar, puertoAConectar); //Conectar con proxy
 		
-		out.writeUTF("1");
-		scManager.close();//El cliente cierra conexion con el Manager
-
 		System.out.println("Conexion con " + scProxy.getInetAddress() + ":" + scProxy.getPort());
 		return scProxy;
 	}
@@ -126,11 +126,6 @@ public class EntidadGubernamental {
 			System.out.println("No se pudo conectar con el manager de conexiones");
 			return;
 		}
-		if(scProxy==null)
-		{
-			System.out.println("No se pudo encontrar un proxy");
-			return;
-		}
 		System.out.println("Conectado exitosamente con el proxy");
 		try {
 			in=new DataInputStream(scProxy.getInputStream());
@@ -157,7 +152,6 @@ public class EntidadGubernamental {
 		{
 			System.out.println("Conexion con el Proxy interrumpida, reintentando conectar...");
 		}
-		
 		if(scProxy != null)
 			if(!scProxy.isClosed())
 			{
