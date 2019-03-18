@@ -15,7 +15,7 @@ public class Servidor{
 		listaConsultas = new ArrayList<Consulta>();
 	}
 	
-	public void main(String[] args)
+	public static void main(String[] args)
 	{
 		ServerSocket servidor=null;
 		Socket scProxy=null;
@@ -29,7 +29,6 @@ public class Servidor{
 				scProxy = servidor.accept();
 				ManejoDeProxies MP=new ManejoDeProxies(server, scProxy, semaforo);
 				MP.start();
-				
 			}
 		}
 		catch(Exception e)

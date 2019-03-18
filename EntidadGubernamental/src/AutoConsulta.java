@@ -41,6 +41,7 @@ public class AutoConsulta extends Thread {
 
 	private boolean mandar(Consulta consulta)
 	{
+		System.out.println("Enviada consulta " + consulta.getNombre() + "(" + semaforo.availablePermits() + ")");
 		semaforoWait();
 		Socket scProxy = null;
 		DataInputStream in = null;
@@ -101,5 +102,6 @@ public class AutoConsulta extends Thread {
 		{
 			while(!mandar(con));
 		}
+		System.out.println("SIsas");
 	}
 }

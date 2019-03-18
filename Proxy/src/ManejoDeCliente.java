@@ -42,6 +42,7 @@ public class ManejoDeCliente extends Thread{
 						DataInputStream inServer = new DataInputStream(scServer.getInputStream());
 						DataOutputStream outServer = new DataOutputStream(scServer.getOutputStream());
 						
+						outServer.writeUTF("1");
 						outServer.writeUTF(String.valueOf(scEntidad.getInetAddress()));
 						outServer.writeUTF(inEntidad.readUTF());
 						outServer.writeUTF(inEntidad.readUTF());

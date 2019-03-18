@@ -13,6 +13,7 @@ public class ManejoDeProxies extends Thread {
 	ManejoDeProxies (Servidor server, Socket aux, Semaphore sem)
 	{
 		sc=aux;
+		System.out.println("Conexion establecida con " + sc.getPort());
 		this.server = server;
 		semaforo = sem;
 	}
@@ -52,8 +53,7 @@ public class ManejoDeProxies extends Thread {
 				mensajeDelProxy = in.readUTF();
 				territorio = mensajeDelProxy;
 				server.ingresarConsulta(nombreConsulta, usuario, territorio);
-				out.writeUTF("2");
-				
+				out.writeUTF("1");
 			}
 			//Pedir lista de consultas
 			else if(mensajeDelProxy.equals("2")) {
