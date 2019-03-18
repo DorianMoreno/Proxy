@@ -85,9 +85,6 @@ public class manejoProxys extends Thread {
 				}
 			}
 			
-			
-			
-			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

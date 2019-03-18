@@ -102,7 +102,7 @@ public class Servidor{
 			{
 				if(con.voto(usuario, voto))
 				{
-					return "Se voto con exito " + voto + " en . consulta " + nombreConsulta;
+					return "Se voto con exito " + voto + " en la consulta " + nombreConsulta;
 				}
 				else
 				{

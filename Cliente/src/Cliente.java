@@ -36,7 +36,7 @@ public class Cliente extends Thread{
 			System.out.println("No se pudo encontrar ningun proxy disponible");//No se encontro ningun proxy disponible
 			out.writeUTF("1");
 			scRegister.close();
-			return null;  //Terminar proceso
+			return null;  //Terminar proceso camilo es un puto camilo es un puto camilo es un puto camilo es un puto
 		}
 
 		Socket scProxy=new Socket (ipAConectar, puertoAConectar); //Conectar con proxy
@@ -48,42 +48,66 @@ public class Cliente extends Thread{
 		return scProxy;
 	}
 
-	public void interaccionConElProxy(boolean estadoConectado, Socket scProxy ) throws IOException
+	public void interaccionConElProxy(boolean estadoConectado, Socket scProxy, Scanner teclado ) throws IOException
 	{
 		String enviar;
-		String mensaje;
 		DataInputStream in=new DataInputStream(scProxy.getInputStream());
 		DataOutputStream out=new DataOutputStream(scProxy.getOutputStream());
 		System.out.println("Sesion iniciada");
-		Scanner teclado = new Scanner(System.in);
 		while(estadoConectado)
 		{
 			//Interaccion con el usuario
-			System.out.println("Ingresar comando");
-			enviar=teclado.nextLine();
-			if(!enviar.equals("Salir")) {
-				out.writeUTF(enviar);
-			}else
+			System.out.println("0. Cerrar sesión");
+			System.out.println("1. Consultar proyectos y votar");
+			enviar = teclado.nextLine();
+			if(enviar.trim().equals("Consular proyectos y votar")|| enviar.trim().equals("1"))
 			{
-				out.writeUTF("Esto solo para saber si sigue conectado");
+				out.writeUTF("ConsultarProyectos");
+				out.writeUTF(nombreInicioDeSesion);		///Mandar id de usuario
+				out.writeUTF(territorioInicioSesion);	///Mandar el territorio al proxy
+				int n = Integer.valueOf(in.readUTF());
+				if(n==0)
+				{
+					System.out.println("No hay consultas disponibles para votar");
+				}
+				else
+				{
+					System.out.println("Usted puede votar en la(s) siguiente(s) consulta(s):");
+					List<String> consultas = new ArrayList<String>();
+					for(int i=0 ; i<n ; ++i)
+					{
+						consultas.add(in.readUTF());
+					}
+					for(int i=0 ; i<n ; ++i)
+					{
+						System.out.println((i+1) + ". " + consultas.get(i));
+					}
+					String voto, consulta;
+					do {
+						System.out.println("Escriba el número de la consulta que quiere votar");
+						consulta = teclado.nextLine().trim();
+						if(Integer.valueOf(consulta) > n || Integer.valueOf(consulta) <= 0)
+						{
+							voto = "ERROR";
+							continue;
+						}
+						System.out.println("Vote (A = Alto, M = Medio, B = Bajo, Salir = Cancelar operación)");
+						voto = teclado.nextLine().trim();
+					}
+					while(!voto.equals("A") && !voto.equals("B") && !voto.equals("M") && !voto.equals("Salir"));
+					out.writeUTF(consultas.get(Integer.valueOf(consulta)-1));
+					out.writeUTF(voto);
+					System.out.println(in.readUTF());
+				}
+			
 			}
-			System.out.println("Enviado el string: "+enviar.trim());
-			if(enviar.trim().equals("Salir") )
+			if(enviar.trim().equals("Cerrar sesion") ||enviar.trim().equals("0"))
 			{
 				System.out.println("Cliente "+scProxy.getInetAddress()+" quiere salirse de la sesion");
 
 				estadoConectado=false;
 			}
-			if(enviar.trim().equals("Request") ) {
-				out.writeUTF("Request");
-				in=new DataInputStream(scProxy.getInputStream());
-				mensaje=in.readUTF();
-				System.out.println("Proyectos:"+mensaje);
-				//Sacando la cantidad de proyectos nuevos
-
-			}
 		}
-		teclado.close();
 	}
 
 	public void conectarConServidor(String ipServidor) 
@@ -113,53 +137,13 @@ public class Cliente extends Thread{
 					{
 						in=new DataInputStream(scProxy.getInputStream());
 						out=new DataOutputStream(scProxy.getOutputStream());
-						System.out.println("0.Salir");
+						System.out.println("0. Salir");
 						System.out.println("1. Iniciar sesion");
 						System.out.println("2. Registrar");
-						System.out.println("3. Consultar proyectos y votar");
 						
 						enviar=teclado.nextLine();
 						
-						if(enviar.trim().equals("Consular proyectos y votar")|| enviar.trim().equals("3"))
-						{
-							out.writeUTF("ConsultarProyectos");
-							out.writeUTF(nombreInicioDeSesion);		///Mandar id de usuario
-							out.writeUTF(territorioInicioSesion);	///Mandar el territorio al proxy
-							int n = Integer.valueOf(in.readUTF());
-							if(n==0)
-							{
-								System.out.println("No hay consultas disponibles para votar");
-							}
-							else
-							{
-								System.out.println("Usted puede votar en la(s) siguiente(s) consulta(s):");
-								List<String> consultas = new ArrayList<String>();
-								for(int i=0 ; i<n ; ++i)
-								{
-									consultas.add(in.readUTF());
-								}
-								for(int i=0 ; i<n ; ++i)
-								{
-									System.out.println((i+1) + ". " + consultas.get(i));
-								}
-								String voto, consulta;
-								do {
-									System.out.println("Escriba el número de la consulta que quiere votar");
-									consulta = teclado.nextLine().trim();
-									if(Integer.valueOf(consulta) > n || Integer.valueOf(consulta) <0)
-									{
-										voto = "ERROR";
-										continue;
-									}
-									System.out.println("Vote (A = Alto, M = Medio, B = Bajo, Salir = Cancelar operación)");
-									voto = teclado.nextLine().trim();
-								}
-								while(!voto.equals("A") && !voto.equals("B") && !voto.equals("C") && !voto.equals("Salir"));
-								out.writeUTF(consultas.get(Integer.valueOf(consulta)));
-								out.writeUTF(voto);
-								System.out.println(in.readUTF());
-							}
-						}
+						
 						if(enviar.trim().equals("Registrar") || enviar.trim().equals("2"))
 						{
 							//Thread.sleep(2000);
@@ -191,7 +175,7 @@ public class Cliente extends Thread{
 								try {
 									this.sesionIniciada=true;
 									estadoConectado=true;
-									interaccionConElProxy( estadoConectado, scProxy );//Comienza la interaccion normal con el proxy
+									interaccionConElProxy( estadoConectado, scProxy, teclado);//Comienza la interaccion normal con el proxy
 
 								}
 								catch(IOException e)
@@ -204,7 +188,7 @@ public class Cliente extends Thread{
 										return;
 									}
 
-									interaccionConElProxy(estadoConectado, scProxy); 
+									interaccionConElProxy(estadoConectado, scProxy, teclado); 
 								}
 							}
 							else
