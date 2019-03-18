@@ -92,6 +92,27 @@ public class Servidor{
 		return false;
 	}
 	
+	public String votarConsulta(String usuario, String nombreConsulta, String voto)
+	{
+		if(voto.equals("Salir"))
+			return "Se pudo salir con exito";
+		for(Consulta con: listaConsultas)
+		{
+			if(nombreConsulta.equals(con.getNombreConsulta()))
+			{
+				if(con.voto(usuario, voto))
+				{
+					return "Se voto con exito " + voto + " en . consulta " + nombreConsulta;
+				}
+				else
+				{
+					return "Ya has votado por esta consulta";
+				}
+			}
+		}
+		return "No existe esa consulta";
+	}
+	
 	public List<Consulta> getListaConsultas() {
 		return listaConsultas;
 	}

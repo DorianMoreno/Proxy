@@ -1,9 +1,6 @@
-import java.awt.image.SampleModel;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.concurrent.Semaphore;
 
 public class ManejoDeCliente extends Thread{
@@ -119,7 +116,6 @@ public class ManejoDeCliente extends Thread{
 			in= new DataInputStream(sc.getInputStream());
 			out= new DataOutputStream(sc.getOutputStream());
 			String mensajeDelCliente = " ";
-			String mensajeDeLaBD;
 			String hash;
 			//out.writeUTF("Mensaje del servidor: conexion exitosa");
 			//Inicio de sesion del usuario
@@ -159,8 +155,6 @@ public class ManejoDeCliente extends Thread{
 					out.writeUTF(String.valueOf(proxy.getCantUsuariosConectados()));
 					/////
 				}
-
-
 				if(mensajeDelCliente.trim().equals("Salir"))
 				{
 					sc.close();
@@ -170,12 +164,27 @@ public class ManejoDeCliente extends Thread{
 				if(mensajeDelCliente.trim().equals("ConsultarProyectos"))
 				{
 					String idUsuario=in.readUTF();//Leer id del usuario
-						String territorioUsuario=in.readUTF();//Leer territorio del usuario
-						//TODO: Decirle al servidor que se va a consultar los proyectos
-						//TODO: Mandarle el id del usuario 
-						//TODO: Mandarle el territorio del usuario
-						//TODO: Esperar a que retorne los proyectos
-						//TODO: Enviarle al cliente los proyectos
+					String territorioUsuario=in.readUTF();//Leer territorio del usuario
+					
+					Socket scServidor = new Socket(ipServidor, portServidor);
+					DataOutputStream outServer = new DataOutputStream(scServidor.getOutputStream());
+					DataInputStream inServer = new DataInputStream(scServidor.getInputStream());
+					outServer.writeUTF("2");
+					outServer.writeUTF(idUsuario);
+					outServer.writeUTF(territorioUsuario);
+					int n = Integer.valueOf(inServer.readUTF());
+					out.writeUTF(String.valueOf(n));
+					for(int i=0 ; i<n ; i++)
+					{
+						out.writeUTF(inServer.readUTF());
+					}
+					if(n != 0)
+					{
+						outServer.writeUTF(in.readUTF());
+						outServer.writeUTF(in.readUTF());
+						out.writeUTF(inServer.readUTF());
+					}
+					scServidor.close();
 				}
 				if(mensajeDelCliente.trim().equals("IniciarSesion"))
 				{
@@ -200,13 +209,10 @@ public class ManejoDeCliente extends Thread{
 					semaforo.release();//Termina seccion critica
 
 				}
-
-
-			}		
+			}
 			System.out.println("desconectado el cliente"+sc.getInetAddress()+" "+sc.getPort());
 		} catch (Exception e) {
 
-			// TODO Auto-generated catch block
 			System.out.println("Se cayo la conexion en: "+sc.getInetAddress()+" "+sc.getPort());
 			proxy.reducirUsuarios();
 			e.printStackTrace();

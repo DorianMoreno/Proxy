@@ -49,17 +49,17 @@ public class Consulta {
 	}
 	
 	//Agrega +1 a una consulta
-	public void voto(String usuario, String voto) {		
+	public boolean voto(String usuario, String voto) {
+		for(String us: usuarioVotaron)
+		{
+			if(us.equals(usuario))
+				return false;
+		}
 		this.usuarioVotaron.add(usuario);
-		if(voto.equals("A")) { 
-			this.votos.add("A");
+		if(voto.equals("A") || voto.equals("M") || voto.equals("B")) { 
+			this.votos.add(voto);
 		}
-		else if(voto.equals("M")) {
-			this.votos.add("M");
-		}
-		else if(voto.equals("B")) {
-			this.votos.add("B");
-		}
+		return true;
 	}
 	
 	//Se comprueba si el usuario ya voto
@@ -126,7 +126,6 @@ public class Consulta {
 	public void setVotos(List<String> votos) {
 		this.votos = votos;
 	}
-	
 	
 	
 }

@@ -31,7 +31,7 @@ public class EntidadGubernamental {
 		
 	public EntidadGubernamental()
 	{
-		ipManager = "25.3.250.74";
+		ipManager = "127.0.0.1";
 		portManager = 5500;
 		semaforo = new Semaphore(1, true);
 		consultas = new ArrayList<Consulta>();
@@ -275,7 +275,7 @@ public class EntidadGubernamental {
 			}
 			
 		}while(!opcion.equals("3"));
-		
+		teclado.close();
 	}
 
 	public String getNombre() {

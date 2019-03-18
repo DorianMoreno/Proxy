@@ -3,6 +3,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Cliente extends Thread{
@@ -15,7 +17,7 @@ public class Cliente extends Thread{
 	public static void main(String [] args) throws InterruptedException//Solo mientras se ejecute en consola
 	{
 
-		String ipServidor="25.3.250.74";
+		String ipServidor="127.0.0.1";
 		new Cliente().conectarConServidor(ipServidor);
 	}
 	public  Socket binding(String ipServidor, int puerto) throws UnknownHostException, IOException 
@@ -81,6 +83,7 @@ public class Cliente extends Thread{
 
 			}
 		}
+		teclado.close();
 	}
 
 	public void conectarConServidor(String ipServidor) 
@@ -111,8 +114,8 @@ public class Cliente extends Thread{
 						in=new DataInputStream(scProxy.getInputStream());
 						out=new DataOutputStream(scProxy.getOutputStream());
 						System.out.println("0.Salir");
-						System.out.println("1.Iniciar sesion");
-						System.out.println("2.Registrar");
+						System.out.println("1. Iniciar sesion");
+						System.out.println("2. Registrar");
 						System.out.println("3. Consultar proyectos y votar");
 						
 						enviar=teclado.nextLine();
@@ -120,12 +123,42 @@ public class Cliente extends Thread{
 						if(enviar.trim().equals("Consular proyectos y votar")|| enviar.trim().equals("3"))
 						{
 							out.writeUTF("ConsultarProyectos");
-							out.writeUTF(nombreInicioDeSesion);///Mandar id de usuario
-							out.writeUTF(territorioInicioSesion);///Mandar el territorio al proxy
-							///TODO: Imprimir los proyectos en los que el usuario puede votar
-							///TODO:Abrir espacio para que el usuario vote
-							///TODO: Enviar voto al proxy
-							///TODO: Confirmacion
+							out.writeUTF(nombreInicioDeSesion);		///Mandar id de usuario
+							out.writeUTF(territorioInicioSesion);	///Mandar el territorio al proxy
+							int n = Integer.valueOf(in.readUTF());
+							if(n==0)
+							{
+								System.out.println("No hay consultas disponibles para votar");
+							}
+							else
+							{
+								System.out.println("Usted puede votar en la(s) siguiente(s) consulta(s):");
+								List<String> consultas = new ArrayList<String>();
+								for(int i=0 ; i<n ; ++i)
+								{
+									consultas.add(in.readUTF());
+								}
+								for(int i=0 ; i<n ; ++i)
+								{
+									System.out.println((i+1) + ". " + consultas.get(i));
+								}
+								String voto, consulta;
+								do {
+									System.out.println("Escriba el número de la consulta que quiere votar");
+									consulta = teclado.nextLine().trim();
+									if(Integer.valueOf(consulta) > n || Integer.valueOf(consulta) <0)
+									{
+										voto = "ERROR";
+										continue;
+									}
+									System.out.println("Vote (A = Alto, M = Medio, B = Bajo, Salir = Cancelar operación)");
+									voto = teclado.nextLine().trim();
+								}
+								while(!voto.equals("A") && !voto.equals("B") && !voto.equals("C") && !voto.equals("Salir"));
+								out.writeUTF(consultas.get(Integer.valueOf(consulta)));
+								out.writeUTF(voto);
+								System.out.println(in.readUTF());
+							}
 						}
 						if(enviar.trim().equals("Registrar") || enviar.trim().equals("2"))
 						{
@@ -205,17 +238,15 @@ public class Cliente extends Thread{
 				}
 			}
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Fallo con la conexion con el register");
+			System.out.println("Fallo con la conexion con el manager");
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			System.out.println("Fallo: "+e);
 			e.printStackTrace();
 			//conectarConServidor(ipServidor);
 		} catch(Exception e)
 		{
-
+			
 		}
 	}
 }

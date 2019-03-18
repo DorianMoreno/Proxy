@@ -36,7 +36,6 @@ public class manejoProxys extends Thread {
 		try {
 			in= new DataInputStream(scProxy.getInputStream());
 			out= new DataOutputStream(scProxy.getOutputStream());
-			String mensaje;
 			String idUsuario;
 			String hashUsuario;
 			String hash;
@@ -90,7 +89,6 @@ public class manejoProxys extends Thread {
 			
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

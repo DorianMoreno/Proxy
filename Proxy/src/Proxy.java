@@ -27,22 +27,7 @@ public class Proxy extends Thread {
 	public void EjecutarProxy (int puerto) throws InterruptedException
 	{
 		ServerSocket servidor=null;
-		//Socket scServidor=null;
 		Socket scCliente;	
-		boolean noConectado=true;
-		/*while(noConectado)
-		{
-			try {
-				//scServidor=new Socket("25.0.38.134", 6000);
-				noConectado=false;
-			}
-			catch (IOException e) {
-
-				// TODO Auto-generated catch block
-				System.out.println("Conectando con el servidor...\n");
-				Thread.sleep(1000);
-			}
-		}*/
 		try
 		{
 			semaforo=new Semaphore(1, true);
@@ -52,12 +37,11 @@ public class Proxy extends Thread {
 			{
 				scCliente=servidor.accept();
 				this.cantUsuariosConectados++;
-				ManejoDeCliente MC=new ManejoDeCliente(scCliente, this, this.semaforo, "127.0.0.1", 6000);
+				ManejoDeCliente MC=new ManejoDeCliente(scCliente, this, semaforo, "127.0.0.1", 6000);
 				MC.start();
 			}
 		} catch (IOException e) {
 
-			// TODO Auto-generated catch block
 			System.out.println("El puerto ya está siendo utilizado por otra aplicacion");
 			e.printStackTrace();
 		}

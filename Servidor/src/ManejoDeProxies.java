@@ -37,7 +37,7 @@ public class ManejoDeProxies extends Thread {
 	public void run()
 	{
 		SemaforoWait();
-		String nombreConsulta, usuario, territorio;
+		String nombreConsulta, usuario, territorio, voto;
 		try {	
 			nombreConsulta = null;
 			usuario = null;
@@ -67,7 +67,20 @@ public class ManejoDeProxies extends Thread {
 				usuario = mensajeDelProxy;
 				mensajeDelProxy = in.readUTF();
 				territorio = mensajeDelProxy;
-				server.consultasParaUsuario(usuario, territorio);
+				List<Consulta> sinVotar = server.consultasParaUsuario(usuario, territorio);
+				out.writeUTF(String.valueOf(sinVotar.size()));
+				for(Consulta con: sinVotar)
+				{
+					out.writeUTF(con.getNombreConsulta());
+				}
+				if(sinVotar.size()!=0)
+				{
+					mensajeDelProxy = in.readUTF();
+					nombreConsulta = mensajeDelProxy;
+					mensajeDelProxy = in.readUTF();
+					voto = mensajeDelProxy;
+					out.writeUTF(server.votarConsulta(usuario, nombreConsulta, voto));
+				}
 			}
 			else if(mensajeDelProxy.equals("3")) {
 				mensajeDelProxy = in.readUTF();
@@ -82,7 +95,6 @@ public class ManejoDeProxies extends Thread {
 			
 		} catch (Exception e) {
 				
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				System.out.println("Se cayo el proxy que esta en: "+sc.getInetAddress());
 		
